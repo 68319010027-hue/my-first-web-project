@@ -68,7 +68,6 @@ function listenAttendance() {
 
     db.collection("attendance")
         .orderBy("date")
-        .orderBy("in")
         .onSnapshot(snapshot => {
             table.innerHTML = "";
             snapshot.forEach(doc => {
@@ -271,7 +270,6 @@ function listenLogs() {
 
     db.collection("logs")
         .orderBy("date")
-        .orderBy("createdAt")
         .onSnapshot(snapshot => {
             allLogs = [];
             snapshot.forEach(doc => {
