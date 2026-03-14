@@ -1,24 +1,3 @@
-// ================= GLOBAL STATE (FIREBASE) =================
-let allLogs = [];
-let currentWeek = null;
-
-// ================= CLOCK =================
-function updateClock() {
-    const now = new Date();
-    const time = now.getHours().toString().padStart(2, "0") + ":" +
-                 now.getMinutes().toString().padStart(2, "0") + ":" +
-                 now.getSeconds().toString().padStart(2, "0");
-    const date = now.getDate() + "/" + (now.getMonth() + 1) + "/" + now.getFullYear();
-
-    const clock = document.getElementById("liveClock");
-    const dateDisplay = document.getElementById("currentDateDisplay");
-
-    if (clock) clock.innerText = time;
-    if (dateDisplay) dateDisplay.innerText = date;
-}
-updateClock();
-setInterval(updateClock, 1000);
-
 // ================= ATTENDANCE (FIRESTORE) =================
 async function saveTime(type) {
     if (!window.db) {
@@ -31,6 +10,7 @@ async function saveTime(type) {
     const ref = db.collection("attendance");
 
     if (type === "IN") {
+        // เช็กว่าวันนี้มีรายการที่ยังไม่ Check out อยู่หรือไม่
         const snap = await ref
             .where("date", "==", today)
             .where("out", "==", null)
@@ -49,6 +29,7 @@ async function saveTime(type) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     } else if (type === "OUT") {
+        // หา record วันนี้ที่ยังไม่ out
         const snap = await ref
             .where("date", "==", today)
             .where("out", "==", null)
@@ -78,6 +59,7 @@ function listenAttendance() {
     db.collection("attendance")
         .orderBy("date")
         .onSnapshot(snapshot => {
+            // รวมข้อมูลแล้วเรียงวันที่ + เวลาเข้า ให้เรียงสวย ๆ
             const rows = [];
             snapshot.forEach(doc => {
                 rows.push({ id: doc.id, ...doc.data() });
@@ -86,7 +68,10 @@ function listenAttendance() {
             rows.sort((a, b) => {
                 const da = new Date(a.date);
                 const dbb = new Date(b.date);
-                if (da.getTime() !== dbb.getTime()) return da - dbb;
+                if (da.getTime() !== dbb.getTime()) {
+                    return da - dbb;
+                }
+                // ถ้าวันเดียวกัน เรียงตามเวลาเข้า (string เวลาไทยก็พอใช้ได้)
                 return (a.in || "").localeCompare(b.in || "");
             });
 
@@ -106,6 +91,7 @@ function listenAttendance() {
             });
         });
 }
+<<<<<<< HEAD
 
 // ================= DAILY LOG (FIRESTORE) =================
 const form = document.getElementById("addLogForm");
@@ -329,3 +315,5 @@ if (!startFirestoreListeners()) {
     }, 100);
     setTimeout(function () { clearInterval(retry); }, 3000);
 }
+=======
+>>>>>>> 0cadf7ebadb8dce92d2102ea8cf4112ab035f284
