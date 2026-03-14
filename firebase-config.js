@@ -15,4 +15,5 @@ const firebaseConfig = {
 // ห้ามลบบรรทัดนี้ จำเป็นสำหรับใช้งาน Firestore ทั่วทั้งเว็บ
 firebase.initializeApp(firebaseConfig);
 const db = firebase.firestore();
-
+// ให้ตัวแปร db ใช้ได้ผ่าน window.db ด้วย
+window.db = db;
