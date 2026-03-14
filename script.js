@@ -319,15 +319,3 @@ function listenLogs() {
 
 listenAttendance();
 listenLogs();
-
-// ================= NAVBAR TOGGLE (MOBILE) =================
-document.addEventListener("DOMContentLoaded", () => {
-    const navToggle = document.getElementById("navToggle");
-    const navMenu = document.getElementById("navMenu");
-
-    if (navToggle && navMenu) {
-        navToggle.addEventListener("click", () => {
-            navMenu.classList.toggle("open");
-        });
-    }
-});
