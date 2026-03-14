@@ -1,56 +1,37 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บันทึกการฝึกงานรายวัน</title>
+    <meta charset="UTF-8"><title>Daily Logs | InternPro</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-
     <nav>
-        <div class="container">
-            <h1>Internship Journal</h1>
+        <div class="container nav-flex">
+            <a href="index.html" class="logo">INTERN<span>PRO</span></a>
             <ul>
                 <li><a href="index.html">หน้าหลัก</a></li>
-                <li><a href="daily-log.html" class="active">บันทึกรายวัน</a></li>
+                <li><a href="daily-log.html">ดูบันทึก</a></li>
+                <li><a href="upload.html">อัปโหลดงาน</a></li>
+                <li><a href="attendance.html">ลงเวลาทำงาน</a></li>
             </ul>
         </div>
     </nav>
-
-    <main class="container">
-        <h2>บันทึกการฝึกงานรายวัน</h2>
-
-        <section id="log-form">
-            <h3>เพิ่มบันทึกใหม่</h3>
-            <form id="addLogForm">
-                <div class="form-group">
-                    <label for="logDate">วันที่:</label>
-                    <input type="date" id="logDate" required>
+    <main class="container log-page-grid">
+        <aside class="log-sidebar">
+            <div class="glass-card" style="padding:20px;">
+                <h3 style="margin-bottom:15px;">📅 เลือกสัปดาห์</h3>
+                <div id="weekNavigation" class="nav-list"></div>
+            </div>
+        </aside>
+        <div class="log-content">
+            <div id="logDisplayArea">
+                <div class="glass-card" style="text-align:center; padding:60px;">
+                    <h3>กรุณาเลือกสัปดาห์เพื่อดูรายการ</h3>
                 </div>
-                <div class="form-group">
-                    <label for="logActivity">กิจกรรมวันนี้:</label>
-                    <textarea id="logActivity" rows="5" placeholder="วันนี้ทำอะไรบ้าง..." required></textarea>
-                </div>
-                <div class="form-group">
-                    <label for="logImage">รูปภาพประกอบ (ถ้ามี):</label>
-                    <input type="file" id="logImage" accept="images/*">
-                </div>
-                <button type="submit" class="btn">บันทึก</button>
-            </form>
-        </section>
-
-        <section id="log-list">
-            <h3>รายการบันทึก</h3>
-            <div id="logsContainer">
-                </div>
-        </section>
+            </div>
+        </div>
     </main>
-
-    <footer>
-        <p>&copy; 2023 [ชื่อของคุณ]. All rights reserved.</p>
-    </footer>
-
     <script src="script.js"></script>
 </body>
 </html>

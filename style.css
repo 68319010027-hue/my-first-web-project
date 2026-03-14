@@ -1,176 +1,54 @@
-/* ตั้งค่าพื้นฐาน */
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    padding: 0;
-    background-color: #f4f4f9;
-    color: #333;
-    line-height: 1.6;
+:root {
+    --primary: #4f46e5;
+    --primary-hover: #4338ca;
+    --success: #10b981;
+    --danger: #ef4444;
+    --bg: #f8fafc;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --glass: rgba(255, 255, 255, 0.9);
+    --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1);
 }
 
-.container {
-    max-width: 960px;
-    margin: 0 auto;
-    padding: 0 20px;
-}
+* { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Kanit', sans-serif; }
+body { background-color: var(--bg); color: var(--text); line-height: 1.6; }
+.container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
 /* Navigation */
-nav {
-    background-color: #333;
-    color: white;
-    padding: 1rem 0;
-}
+nav { background: var(--glass); backdrop-filter: blur(10px); position: sticky; top: 0; z-index: 1000; padding: 15px 0; border-bottom: 1px solid rgba(0,0,0,0.05); }
+.nav-flex { display: flex; justify-content: space-between; align-items: center; }
+.logo { font-size: 1.5rem; font-weight: 600; color: var(--text); text-decoration: none; }
+.logo span { color: var(--primary); }
+nav ul { display: flex; list-style: none; gap: 10px; }
+nav ul li a { text-decoration: none; color: var(--text); padding: 8px 16px; border-radius: 10px; transition: 0.3s; font-size: 0.9rem; }
+nav ul li a:hover, nav ul li a.active { background: var(--primary); color: white; }
 
-nav .container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
+/* Layouts */
+.glass-card { background: white; padding: 30px; border-radius: 24px; box-shadow: var(--shadow); margin-bottom: 20px; border: 1px solid #f1f5f9; }
+.log-page-grid { display: grid; grid-template-columns: 280px 1fr; gap: 30px; padding: 40px 0; }
+.log-sidebar { position: sticky; top: 100px; height: fit-content; }
+.log-nav-item { padding: 15px; background: white; border-radius: 15px; cursor: pointer; transition: 0.3s; border: 1px solid #e2e8f0; font-weight: 500; margin-bottom: 10px; }
+.log-nav-item:hover { transform: translateX(5px); border-color: var(--primary); color: var(--primary); }
+.log-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-nav h1 {
-    margin: 0;
-    font-size: 1.5rem;
-}
+/* Buttons */
+.btn { border: none; padding: 12px 24px; border-radius: 12px; font-weight: 500; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-block; font-size: 1rem; }
+.btn-primary { background: var(--primary); color: white; }
+.btn-outline { border: 2px solid #e2e8f0; background: white; color: var(--text); }
+.btn-danger-sm { background: #fee2e2; color: var(--danger); padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; border: none; cursor: pointer; transition: 0.2s; }
+.btn-danger-sm:hover { background: var(--danger); color: white; }
 
-nav ul {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    display: flex;
-}
+/* Attendance & Logs */
+#liveClock { font-size: 4rem; font-weight: 700; color: var(--primary); margin: 10px 0; letter-spacing: -2px; }
+.attendance-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+.attendance-table th { background: #f8fafc; padding: 15px; color: var(--text-light); border-bottom: 2px solid #e2e8f0; }
+.attendance-table td { padding: 15px; text-align: center; border-bottom: 1px solid #f1f5f9; }
+.log-entry { border-left: 4px solid var(--primary); padding: 15px; background: #f8fafc; border-radius: 0 15px 15px 0; margin-bottom: 15px; position: relative; }
+.log-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.log-image-preview { width: 100%; max-height: 400px; object-fit: contain; margin-top: 15px; border-radius: 10px; border: 1px solid #eee; }
+.badge { background: #e0e7ff; color: var(--primary); padding: 4px 10px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
 
-nav ul li a {
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 5px;
-    transition: background-color 0.3s;
-}
+.fade-in { animation: fadeIn 0.5s ease-in-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-nav ul li a:hover, nav ul li a.active {
-    background-color: #555;
-}
-
-/* Main Content */
-main {
-    padding: 2rem 0;
-}
-
-section {
-    margin-bottom: 2rem;
-    background: white;
-    padding: 2rem;
-    border-radius: 10px;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-h2, h3 {
-    margin-top: 0;
-    color: #007bff;
-}
-
-/* Hero Section */
-#hero {
-    text-align: center;
-}
-
-.profile-img {
-    width: 150px;
-    height: 150px;
-    border-radius: 50%;
-    object-fit: cover;
-    margin-bottom: 1rem;
-    border: 5px solid white;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-/* Summary Section */
-.summary-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-}
-
-.card {
-    background-color: #f9f9f9;
-    padding: 1rem;
-    border-radius: 5px;
-    border: 1px solid #eee;
-}
-
-.card h4 {
-    margin-top: 0;
-    color: #555;
-}
-
-/* Log Form */
-.form-group {
-    margin-bottom: 1rem;
-}
-
-label {
-    display: block;
-    margin-bottom: 0.25rem;
-    font-weight: bold;
-}
-
-input[type="date"], textarea, input[type="file"] {
-    width: 100%;
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    box-sizing: border-box; /* สำคัญเพื่อให้ padding ไม่ทำให้ความกว้างเกิน */
-}
-
-/* Log List */
-.log-item {
-    border-bottom: 1px solid #eee;
-    padding: 1rem 0;
-}
-
-.log-item:last-child {
-    border-bottom: none;
-}
-
-.log-item h4 {
-    margin: 0 0 0.5rem 0;
-    color: #555;
-}
-
-.log-item p {
-    margin: 0;
-}
-
-.log-image-preview {
-    max-width: 100%;
-    height: auto;
-    margin-top: 1rem;
-    border-radius: 5px;
-}
-
-/* Button */
-.btn {
-    display: inline-block;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 5px;
-    text-decoration: none; /* สำหรับ link ที่ทำเป็นปุ่ม */
-    transition: 0.3s;
-}
-
-.btn:hover {
-    background-color: #0056b3;
-}
-
-/* Footer */
-footer {
-    background-color: #333;
-    color: white;
-    text-align: center;
-    padding: 1rem 0;
-    margin-top: auto; /* ดัน footer ลงล่างสุด */
-}
+@media (max-width: 768px) { .log-page-grid { grid-template-columns: 1fr; } .log-sidebar { position: static; } }

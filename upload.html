@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8"><title>Upload Log | InternPro</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <nav>
+        <div class="container nav-flex">
+            <a href="index.html" class="logo">INTERN<span>PRO</span></a>
+            <ul>
+                <li><a href="index.html">หน้าหลัก</a></li>
+                <li><a href="daily-log.html">ดูบันทึก</a></li>
+                <li><a href="upload.html">อัปโหลดงาน</a></li>
+                <li><a href="attendance.html">ลงเวลาทำงาน</a></li>
+            </ul>
+        </div>
+    </nav>
+    <main class="container">
+        <div class="glass-card fade-in" style="max-width:700px; margin:40px auto;">
+            <h2 style="margin-bottom:20px;">บันทึกการทำงานวันนี้</h2>
+            <form id="addLogForm">
+                <div style="margin-bottom:15px;">
+                    <label>วันที่</label>
+                    <input type="date" id="logDate" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd;" required>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label>รูปภาพ (ถ้ามี)</label>
+                    <input type="file" id="logImage" accept="image/*" style="width:100%; padding:10px; border:1px dashed #ccc; border-radius:10px;">
+                </div>
+                <div style="margin-bottom:20px;">
+                    <label>รายละเอียดกิจกรรม</label>
+                    <textarea id="logActivity" rows="6" style="width:100%; padding:12px; border-radius:10px; border:1px solid #ddd;" placeholder="วันนี้ทำอะไรบ้าง..." required></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width:100%;">บันทึกข้อมูล</button>
+            </form>
+        </div>
+    </main>
+    <script src="script.js"></script>
+</body>
+</html>

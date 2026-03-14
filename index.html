@@ -1,53 +1,33 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>บันทึกการฝึกงานของฉัน</title>
+    <meta charset="UTF-8"><title>Dashboard | InternPro</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-
     <nav>
-        <div class="container">
-            <h1>Internship Journal</h1>
+        <div class="container nav-flex">
+            <a href="index.html" class="logo">INTERN<span>PRO</span></a>
             <ul>
-                <li><a href="index.html" class="active">หน้าหลัก</a></li>
-                <li><a href="daily-log.html">บันทึกรายวัน</a></li>
+                <li><a href="index.html">หน้าหลัก</a></li>
+                <li><a href="daily-log.html">ดูบันทึก</a></li>
+                <li><a href="upload.html">อัปโหลดงาน</a></li>
+                <li><a href="attendance.html">ลงเวลาทำงาน</a></li>
             </ul>
         </div>
     </nav>
-
-    <main class="container">
-        <section id="hero">
-            <img src="images/profile.jpg" alt="รูปโปรไฟล์" class="profile-img"> <h2>ยินดีต้อนรับสู่บันทึกการฝึกงานของ [ชื่อของคุณ]</h2>
-            <p>ตำแหน่ง: [ตำแหน่งฝึกงานของคุณ] ที่ [ชื่อบริษัท]</p>
-            <p>ระยะเวลา: [วันเริ่ม] - [วันจบ]</p>
-            <a href="daily-log.html" class="btn">ดูบันทึกรายวัน</a>
-        </section>
-
-        <section id="summary">
-            <h3>สรุปภาพรวมการฝึกงาน</h3>
-            <div class="summary-cards">
-                <div class="card">
-                    <h4>โปรเจกต์ที่ทำ</h4>
-                    <p>พัฒนาระบบ... และช่วยทีม...</p>
-                </div>
-                <div class="card">
-                    <h4>ทักษะที่ได้เรียนรู้</h4>
-                    <p>HTML, CSS, Git, GitHub...</p>
-                </div>
-                <div class="card">
-                    <h4>ความประทับใจ</h4>
-                    <p>พี่ๆ ในทีมใจดีมาก และได้เรียนรู้ทำงานจริง...</p>
-                </div>
+    <header class="hero fade-in container" style="padding:60px 0; text-align:center;">
+        <div class="glass-card">
+            <img src="img/images.png" alt="Profile" style="width:150px; border-radius:50%; margin-bottom:20px; box-shadow:var(--shadow);">
+            <h1>ระบบจัดการและบันทึกการฝึกงาน</h1>
+            <p>สำนักงานสาธารณสุขจังหวัดเลย</p>
+            <div style="margin-top:30px; display:flex; gap:15px; justify-content:center;">
+                <a href="upload.html" class="btn btn-primary">ลงบันทึกวันนี้</a>
+                <a href="attendance.html" class="btn btn-outline">ลงเวลาเข้างาน</a>
             </div>
-        </section>
-    </main>
-
-    <footer>
-        <p>&copy; 2023 [ชื่อของคุณ]. All rights reserved.</p>
-    </footer>
-
+        </div>
+    </header>
+    <script src="script.js"></script>
 </body>
 </html>
