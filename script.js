@@ -1,188 +1,347 @@
-document.addEventListener('DOMContentLoaded', async () => {
-    
-    // --- 1. โหลดข้อมูล (โหลดจาก data.json เฉพาะครั้งแรกที่เข้าเว็บเท่านั้น) ---
-    async function initDatabase() {
-        // เช็คว่าเคยดึงข้อมูลจากไฟล์มาลงเครื่องหรือยัง
-        if (!localStorage.getItem('db_initialized')) {
-            try {
-                const response = await fetch('data.json');
-                const serverData = await response.json();
-                
-                // เก็บข้อมูลลงเครื่องผู้ใช้
-                localStorage.setItem('internshipLogs', JSON.stringify(serverData.internshipLogs || []));
-                localStorage.setItem('attendanceHistory', JSON.stringify(serverData.attendanceHistory || []));
-                
-                // มาร์คไว้ว่าโหลดแล้ว ครั้งหน้าจะไม่โหลดทับข้อมูลที่ผู้ใช้กดไว้
-                localStorage.setItem('db_initialized', 'true');
-                console.log("Database initialized from data.json");
-            } catch (e) {
-                console.error("Error loading data.json:", e);
+// ================= CLOCK =================
+function updateClock(){
+
+    const now = new Date()
+
+    const time =
+        now.getHours().toString().padStart(2,"0")+":"+
+        now.getMinutes().toString().padStart(2,"0")+":"+
+        now.getSeconds().toString().padStart(2,"0")
+
+    const date =
+        now.getDate()+"/"+
+        (now.getMonth()+1)+"/"+
+        now.getFullYear()
+
+    const clock = document.getElementById("liveClock")
+    const dateDisplay = document.getElementById("currentDateDisplay")
+
+    if(clock) clock.innerText = time
+    if(dateDisplay) dateDisplay.innerText = date
+}
+
+setInterval(updateClock,1000)
+
+
+// ================= STORAGE =================
+function getData(){
+
+    return JSON.parse(localStorage.getItem("internData")) || {
+        attendance:[],
+        logs:[],
+        startDate:null
+    }
+
+}
+
+function saveData(data){
+
+    localStorage.setItem("internData",JSON.stringify(data))
+
+}
+
+
+// ================= ATTENDANCE =================
+function saveTime(type){
+
+    let data = getData()
+
+    const today = new Date().toISOString().split("T")[0]
+    const time = new Date().toLocaleTimeString()
+
+    const todayRecords = data.attendance.filter(a=>a.date===today)
+    const last = todayRecords[todayRecords.length-1]
+
+
+    // CHECK IN
+    if(type==="IN"){
+
+        if(last && !last.out){
+            alert("ยังไม่ได้ Check out")
+            return
+        }
+
+        data.attendance.push({
+            id:Date.now(),
+            date:today,
+            in:time,
+            out:null
+        })
+
+    }
+
+
+    // CHECK OUT
+    if(type==="OUT"){
+
+        if(!last || last.out){
+            alert("ต้อง Check in ก่อน")
+            return
+        }
+
+        last.out = time
+
+    }
+
+    saveData(data)
+
+    renderAttendance()
+
+}
+
+
+// ================= RENDER ATTENDANCE =================
+function renderAttendance(){
+
+    const table = document.getElementById("attendanceBody")
+
+    if(!table) return
+
+    const data = getData()
+
+    table.innerHTML=""
+
+    data.attendance.forEach(item=>{
+
+        const status = item.out ? "เสร็จงาน" : "กำลังทำงาน"
+
+        table.innerHTML+=`
+        <tr>
+            <td>${item.date}</td>
+            <td>${item.in}</td>
+            <td>${item.out || "-"}</td>
+            <td>${status}</td>
+        </tr>
+        `
+
+    })
+
+}
+
+renderAttendance()
+
+
+// ================= ADD DAILY LOG =================
+const form = document.getElementById("addLogForm")
+
+if(form){
+
+form.addEventListener("submit",function(e){
+
+    e.preventDefault()
+
+    const date = document.getElementById("logDate").value
+    const activity = document.getElementById("logActivity").value
+    const imageInput = document.getElementById("logImage")
+
+    const file = imageInput.files[0]
+
+    const reader = new FileReader()
+
+    reader.onload=function(){
+
+        const img = file ? reader.result : null
+
+        let data = getData()
+
+        if(!data.startDate) data.startDate = date
+
+        data.logs.push({
+            id:Date.now(),
+            date:date,
+            activity:activity,
+            image:img
+        })
+
+        saveData(data)
+
+        alert("บันทึกสำเร็จ")
+
+        form.reset()
+
+    }
+
+    if(file) reader.readAsDataURL(file)
+    else reader.onload()
+
+})
+
+}
+
+
+// ================= DELETE LOG =================
+function deleteLog(id){
+
+    if(!confirm("ต้องการลบรายการนี้หรือไม่?")) return
+
+    let data = getData()
+
+    data.logs = data.logs.filter(log=>log.id!==id)
+
+    saveData(data)
+
+    renderWeeks()
+
+    if(currentWeek) renderLogs(currentWeek)
+
+}
+
+
+// ================= WEEK CALC =================
+function getWeekNumber(startDate,currentDate){
+
+    const start = new Date(startDate)
+    const current = new Date(currentDate)
+
+    start.setHours(0,0,0,0)
+    current.setHours(0,0,0,0)
+
+    const diffTime = current-start
+    const diffDays = Math.floor(diffTime/(1000*60*60*24))
+
+    const week = Math.floor(diffDays/7)+1
+
+    return week
+
+}
+
+
+// ================= GROUP LOG =================
+function groupLogsByWeek(){
+
+    const data = getData()
+
+    const weeks={}
+
+    data.logs.forEach(log=>{
+
+        const week = getWeekNumber(data.startDate,log.date)
+
+        if(!weeks[week]) weeks[week]=[]
+
+        weeks[week].push(log)
+
+    })
+
+    return weeks
+
+}
+
+
+// ================= WEEK NAV =================
+let currentWeek=null
+
+function renderWeeks(){
+
+    const nav = document.getElementById("weekNavigation")
+
+    if(!nav) return
+
+    const weeks = groupLogsByWeek()
+
+    nav.innerHTML=""
+
+    Object.keys(weeks).forEach(w=>{
+
+        const div=document.createElement("div")
+
+        div.className="log-nav-item"
+
+        div.innerText="Week "+w
+
+        div.onclick=()=>{
+
+            currentWeek=w
+            renderLogs(w)
+
+        }
+
+        nav.appendChild(div)
+
+    })
+
+}
+
+renderWeeks()
+
+
+// ================= RENDER LOGS =================
+function renderLogs(week){
+
+    const area = document.getElementById("logDisplayArea")
+
+    if(!area) return
+
+    const weeks = groupLogsByWeek()
+
+    const logs = weeks[week]
+
+    area.innerHTML=""
+
+    let grouped={}
+
+    logs.forEach(l=>{
+
+        if(!grouped[l.date]) grouped[l.date]=[]
+
+        grouped[l.date].push(l)
+
+    })
+
+
+    Object.keys(grouped).forEach(date=>{
+
+        let html=`
+        <div class="glass-card">
+        <h3>${date}</h3>
+        `
+
+        grouped[date].forEach(log=>{
+
+            html+=`
+            <div class="task-entry" style="position:relative;margin-top:15px">
+
+            <button class="btn-delete"
+            onclick="deleteLog(${log.id})">✖</button>
+
+            <p>${log.activity}</p>
+
+            ${
+                log.image
+                ? `<img src="${log.image}" style="max-width:300px;margin-top:10px;border-radius:10px;">`
+                : ""
             }
-        }
-    }
 
-    await initDatabase();
+            </div>
+            `
 
-    // --- 2. ระบบลงเวลา (attendance.html) ---
-    const clock = document.getElementById('liveClock');
-    if (clock) {
-        // ทำให้นาฬิกาเดินวินาทีต่อวินาที
-        setInterval(() => {
-            clock.textContent = new Date().toLocaleTimeString('th-TH');
-            const dateDisplay = document.getElementById('currentDateDisplay');
-            if(dateDisplay) dateDisplay.textContent = new Date().toLocaleDateString('th-TH', {dateStyle:'full'});
-        }, 1000);
-        
-        renderAttendance();
-    }
+        })
 
-    window.saveTime = (type) => {
-        let history = JSON.parse(localStorage.getItem('attendanceHistory')) || [];
-        const now = new Date();
-        const dateStr = now.toLocaleDateString('th-TH');
-        const timeStr = now.toLocaleTimeString('th-TH');
+        html+="</div>"
 
-        if (type === 'IN') {
-            // เช็คว่ากด Check-in ซ้อนไหม
-            if (history.length > 0 && history[0].out === '-') {
-                alert("คุณยังไม่ได้ Check-out ของเดิม!");
-                return;
-            }
-            history.unshift({ id: Date.now(), date: dateStr, in: timeStr, out: '-', status: 'กำลังงาน' });
-        } else {
-            // เช็คว่ามีรายการที่รอ Check-out ไหม
-            if (history.length > 0 && history[0].out === '-') {
-                history[0].out = timeStr;
-                history[0].status = 'จบงาน';
-            } else {
-                alert("กรุณา Check-in ก่อน!");
-                return;
-            }
-        }
-        localStorage.setItem('attendanceHistory', JSON.stringify(history));
-        renderAttendance();
-    };
+        area.innerHTML+=html
 
-    function renderAttendance() {
-        const body = document.getElementById('attendanceBody');
-        if (!body) return;
-        
-        const history = JSON.parse(localStorage.getItem('attendanceHistory')) || [];
-        const btnIn = document.getElementById('btnIn');
-        const btnOut = document.getElementById('btnOut');
-        
-        // ตรวจสอบว่าปัจจุบันกำลังทำงานอยู่หรือไม่
-        const isWorking = history.length > 0 && history[0].out === '-';
+    })
 
-        if(btnIn && btnOut) {
-            btnIn.disabled = isWorking;
-            btnOut.disabled = !isWorking;
-            btnIn.style.opacity = isWorking ? "0.4" : "1";
-            btnOut.style.opacity = !isWorking ? "0.4" : "1";
-        }
+}
 
-        body.innerHTML = history.map(h => `
-            <tr>
-                <td>${h.date}</td>
-                <td><span class="badge" style="background:#dcfce7; color:#166534">${h.in}</span></td>
-                <td><span class="badge" style="background:#fee2e2; color:#991b1b">${h.out}</span></td>
-                <td>${h.status}</td>
-            </tr>
-        `).join('');
-    }
 
-    // --- 3. จัดการหน้า ดูบันทึก (daily-log.html) ---
-    const logArea = document.getElementById('logDisplayArea');
-    const weekNav = document.getElementById('weekNavigation');
-    if (logArea && weekNav) {
-        renderLogs();
-    }
+// ================= EXPORT JSON =================
+function exportData(){
 
-    function renderLogs() {
-        const logs = JSON.parse(localStorage.getItem('internshipLogs')) || [];
-        if (logs.length === 0) {
-            logArea.innerHTML = "<p>ยังไม่มีบันทึกข้อมูล</p>";
-            return;
-        }
+    const data = getData()
 
-        logs.sort((a, b) => new Date(a.date) - new Date(b.date));
-        const firstDate = new Date(logs[0].date);
-        const weeksGroup = {};
+    const blob = new Blob(
+        [JSON.stringify(data,null,2)],
+        {type:"application/json"}
+    )
 
-        logs.forEach(log => {
-            const currentDate = new Date(log.date);
-            const diffDays = Math.floor((currentDate - firstDate) / (1000 * 60 * 60 * 24));
-            const weekNum = Math.floor(diffDays / 7) + 1;
-            if (!weeksGroup[weekNum]) weeksGroup[weekNum] = {};
-            if (!weeksGroup[weekNum][log.date]) weeksGroup[weekNum][log.date] = [];
-            weeksGroup[weekNum][log.date].push(log);
-        });
+    const a=document.createElement("a")
 
-        weekNav.innerHTML = Object.keys(weeksGroup).map(w => 
-            `<div class="log-nav-item" id="btn-w-${w}" onclick="displayWeek(${w})">สัปดาห์ที่ ${w}</div>`
-        ).join('');
+    a.href = URL.createObjectURL(blob)
 
-        window.displayWeek = (w) => {
-            document.querySelectorAll('.log-nav-item').forEach(el => el.classList.remove('active'));
-            document.getElementById(`btn-w-${w}`).classList.add('active');
+    a.download="intern-data.json"
 
-            const weekData = weeksGroup[w];
-            const sortedDates = Object.keys(weekData).sort((a, b) => new Date(b) - new Date(a));
+    a.click()
 
-            logArea.innerHTML = sortedDates.map(date => `
-                <div class="glass-card fade-in" style="margin-bottom:20px; border-left: 5px solid var(--primary);">
-                    <h3 style="border-bottom:1px solid #eee; padding-bottom:10px;">📅 ${new Date(date).toLocaleDateString('th-TH', {dateStyle:'full'})}</h3>
-                    ${weekData[date].map((t, i) => `
-                        <div style="margin-top:15px; padding-left:10px; position: relative;">
-                            <button onclick="deleteLog(${t.id})" style="position:absolute; right:0; top:0; background:none; border:none; color:red; cursor:pointer;">✕</button>
-                            <span class="badge">งานที่ ${i+1}</span>
-                            <p style="margin-top:5px; white-space:pre-line;">${t.activity}</p>
-                            ${t.image ? `<img src="${t.image}" style="width:100%; border-radius:10px; margin-top:10px;">` : ''}
-                        </div>
-                    `).join('<hr style="margin:15px 0; opacity:0.1;">')}
-                </div>
-            `).join('');
-        };
-        displayWeek(Object.keys(weeksGroup).pop());
-    }
-
-    window.deleteLog = (id) => {
-        if (confirm("ลบรายการนี้?")) {
-            let logs = JSON.parse(localStorage.getItem('internshipLogs')) || [];
-            logs = logs.filter(l => l.id !== id);
-            localStorage.setItem('internshipLogs', JSON.stringify(logs));
-            renderLogs();
-        }
-    };
-
-    // --- 4. เพิ่มงานใหม่ (upload.html) ---
-    const addLogForm = document.getElementById('addLogForm');
-    if (addLogForm) {
-        addLogForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            const date = document.getElementById('logDate').value;
-            const activity = document.getElementById('logActivity').value;
-            const file = document.getElementById('logImage').files[0];
-
-            const save = (img) => {
-                const logs = JSON.parse(localStorage.getItem('internshipLogs')) || [];
-                logs.push({ id: Date.now(), date, activity, image: img });
-                localStorage.setItem('internshipLogs', JSON.stringify(logs));
-                alert("บันทึกแล้ว!"); window.location.href="daily-log.html";
-            };
-            if(file) { const r = new FileReader(); r.onload=e=>save(e.target.result); r.readAsDataURL(file); }
-            else save(null);
-        });
-    }
-
-    // --- 5. Export เพื่ออัปเดตไฟล์ GitHub ---
-    window.exportData = () => {
-        const data = {
-            internshipLogs: JSON.parse(localStorage.getItem('internshipLogs')),
-            attendanceHistory: JSON.parse(localStorage.getItem('attendanceHistory'))
-        };
-        const blob = new Blob([JSON.stringify(data, null, 2)], {type: 'application/json'});
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = 'data.json'; a.click();
-    };
-});
+}
