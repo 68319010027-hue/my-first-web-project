@@ -11,8 +11,15 @@
     <nav>
         <div class="container nav-flex">
             <a href="index.html" class="logo">INTERN<span>PRO</span></a>
-            <ul>
-                <li><a href="index.html">หน้าหลัก</a></li>
+
+            <button class="nav-toggle" aria-label="Toggle navigation" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul id="navMenu">
+                <li><a href="index.html" class="active">หน้าหลัก</a></li>
                 <li><a href="daily-log.html">ดูบันทึก</a></li>
                 <li><a href="upload.html">อัปโหลดงาน</a></li>
                 <li><a href="attendance.html">ลงเวลาทำงาน</a></li>
@@ -20,6 +27,7 @@
             </ul>
         </div>
     </nav>
+
     <header class="hero container" style="padding:60px 0; text-align:center;">
         <div class="glass-card fade-in">
             <img src="img/images.png" alt="Profile" style="width:150px; height:150px; object-fit:cover; border-radius:50%; margin-bottom:20px; box-shadow:var(--shadow); border: 5px solid white;">
@@ -31,6 +39,7 @@
             </div>
         </div>
     </header>
+
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
