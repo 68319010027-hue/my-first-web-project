@@ -25,21 +25,24 @@ async function saveTime(type) {
         alert("ยังไม่สามารถเชื่อมต่อฐานข้อมูลได้");
         return;
     }
+
     const today = new Date().toISOString().split("T")[0];
     const time = new Date().toLocaleTimeString();
     const ref = db.collection("attendance");
 
     if (type === "IN") {
+        // เช็กว่าวันนี้มีรายการที่ยังไม่ Check out อยู่หรือไม่
         const snap = await ref
             .where("date", "==", today)
             .where("out", "==", null)
-            .orderBy("createdAt", "desc")
             .limit(1)
             .get();
+
         if (!snap.empty) {
             alert("ยังไม่ได้ Check out");
             return;
         }
+
         await ref.add({
             date: today,
             in: time,
@@ -47,18 +50,22 @@ async function saveTime(type) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     } else if (type === "OUT") {
+        // หา record วันนี้ที่ยังไม่ out
         const snap = await ref
             .where("date", "==", today)
             .where("out", "==", null)
-            .orderBy("createdAt", "desc")
             .limit(1)
             .get();
+
         if (snap.empty) {
             alert("ต้อง Check in ก่อน");
             return;
         }
+
         const doc = snap.docs[0];
-        await doc.ref.update({ out: time });
+        await doc.ref.update({
+            out: time
+        });
     }
 }
 
@@ -87,24 +94,26 @@ function listenAttendance() {
 // ================= DAILY LOG (FIRESTORE) =================
 const form = document.getElementById("addLogForm");
 if (form) {
-    form.addEventListener("submit", function(e) {
+    form.addEventListener("submit", function (e) {
         e.preventDefault();
         const date = document.getElementById("logDate").value;
         const activity = document.getElementById("logActivity").value;
         const file = document.getElementById("logImage").files[0];
         const reader = new FileReader();
 
-        reader.onload = async function() {
+        reader.onload = async function () {
             if (!window.db) {
                 alert("ยังไม่สามารถเชื่อมต่อฐานข้อมูลได้");
                 return;
             }
+
             await db.collection("logs").add({
                 date: date,
                 activity: activity,
                 image: file ? reader.result : null,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
+
             alert("บันทึกสำเร็จ! ข้อมูลถูกเก็บไว้บนระบบกลางแล้ว");
             form.reset();
         };
@@ -124,8 +133,8 @@ async function deleteLog(id) {
 function getWeekNumber(startDate, currentDate) {
     const start = new Date(startDate);
     const curr = new Date(currentDate);
-    start.setHours(0,0,0,0);
-    curr.setHours(0,0,0,0);
+    start.setHours(0, 0, 0, 0);
+    curr.setHours(0, 0, 0, 0);
     const diffDays = Math.floor((curr - start) / (1000 * 60 * 60 * 24));
     return Math.floor(diffDays / 7) + 1;
 }
@@ -143,6 +152,7 @@ function groupLogsByWeek() {
     });
     return weeks;
 }
+
 function renderWeeks() {
     const nav = document.getElementById("weekNavigation");
     if (!nav) return;
@@ -164,8 +174,11 @@ function renderWeeks() {
 
 function formatThaiDate(dateStr) {
     const d = new Date(dateStr);
-    const months = ["มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"];
-    return `📅 วัน${new Intl.DateTimeFormat('th-TH', {weekday:'long'}).format(d)}ที่ ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()+543}`;
+    const months = [
+        "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน","พฤษภาคม","มิถุนายน",
+        "กรกฎาคม","สิงหาคม","กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+    ];
+    return `📅 วัน${new Intl.DateTimeFormat('th-TH', { weekday: 'long' }).format(d)}ที่ ${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
 }
 
 function renderLogs(week) {
@@ -176,9 +189,12 @@ function renderLogs(week) {
     area.innerHTML = logs.length ? "" : "<p>ไม่มีข้อมูลในสัปดาห์นี้</p>";
 
     let grouped = {};
-    logs.forEach(l => { if (!grouped[l.date]) grouped[l.date] = []; grouped[l.date].push(l); });
-    
-    Object.keys(grouped).sort((a,b)=>new Date(a)-new Date(b)).forEach(date => {
+    logs.forEach(l => {
+        if (!grouped[l.date]) grouped[l.date] = [];
+        grouped[l.date].push(l);
+    });
+
+    Object.keys(grouped).sort((a, b) => new Date(a) - new Date(b)).forEach(date => {
         let html = `<div class="glass-card"><h3>${formatThaiDate(date)}</h3>`;
         grouped[date].forEach(log => {
             html += `
@@ -218,7 +234,7 @@ async function importData(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = async function(e) {
+    reader.onload = async function (e) {
         try {
             const importedData = JSON.parse(e.target.result);
             if (!window.db) {
@@ -257,7 +273,9 @@ async function importData(event) {
 
             await batch.commit();
             alert("อัปเดตข้อมูลจากไฟล์สำเร็จ!");
-        } catch (err) { alert("ไฟล์ JSON ไม่ถูกต้อง"); }
+        } catch (err) {
+            alert("ไฟล์ JSON ไม่ถูกต้อง");
+        }
     };
     reader.readAsText(file);
 }
