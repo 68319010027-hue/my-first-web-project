@@ -1,58 +1,12 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ลงเวลาทำงาน | InternPro</title>
-    <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
-</head>
-<body>
-    <nav>
-        <div class="container nav-flex">
-            <a href="index.html" class="logo">INTERN<span>PRO</span></a>
-            <ul>
-                <li><a href="index.html">หน้าหลัก</a></li>
-                <li><a href="daily-log.html">ดูบันทึก</a></li>
-                <li><a href="upload.html">อัปโหลดงาน</a></li>
-                <li><a href="attendance.html" class="active">ลงเวลาทำงาน</a></li>
-                <li><a href="profile.html">ข้อมูลส่วนตัว</a></li>
-            </ul>
-        </div>
-    </nav>
-
-    <main class="container">
-        <div style="max-width:800px; margin:40px auto;">
-            <section class="glass-card fade-in" style="text-align:center; margin-bottom:20px;">
-                <h2 id="liveClock" style="font-size: 3rem; color: var(--primary);">00:00:00</h2>
-                <p id="currentDateDisplay" style="font-size: 1.2rem; color: var(--text-light);">...</p>
-                <div style="margin-top:25px; display:flex; gap:15px; justify-content:center;">
-                    <button id="btnIn" onclick="saveTime('IN')" class="btn btn-primary">Check In</button>
-                    <button id="btnOut" onclick="saveTime('OUT')" class="btn btn-outline">Check Out</button>
-                </div>
-            </section>
-
-            <div class="glass-card">
-                <h3>ประวัติการลงเวลา</h3>
-                <table class="attendance-table">
-                    <thead>
-                        <tr>
-                            <th>วันที่</th>
-                            <th>เข้า</th>
-                            <th>ออก</th>
-                            <th>สถานะ</th>
-                            <th>จัดการ</th>
-                        </tr>
-                    </thead>
-                    <tbody id="attendanceBody"></tbody>
-                </table>
-            </div>
-        </div>
-    </main>
-
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
-    <script src="firebase-config.js"></script>
-    <script src="script.js"></script>
-</body>
-</html>
+<table class="attendance-table">
+    <thead>
+        <tr>
+            <th>วันที่</th>
+            <th>เข้า</th>
+            <th>ออก</th>
+            <th>สถานะ</th>
+            <th>จัดการ</th>
+        </tr>
+    </thead>
+    <tbody id="attendanceBody"></tbody>
+</table>
