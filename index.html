@@ -3,23 +3,51 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Internship Project</title>
+    <title>บันทึกการฝึกงานของฉัน</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <nav>
-        <h1>Internship Log</h1>
+        <div class="container">
+            <h1>Internship Journal</h1>
+            <ul>
+                <li><a href="index.html" class="active">หน้าหลัก</a></li>
+                <li><a href="daily-log.html">บันทึกรายวัน</a></li>
+            </ul>
+        </div>
     </nav>
 
-    <main>
+    <main class="container">
         <section id="hero">
-            <h2>ยินดีต้อนรับสู่โปรเจกต์ฝึกงานของฉัน</h2>
-            <p>กำลังเรียนรู้การใช้ Git และ GitHub อย่างจริงจัง!</p>
-            <button id="colorButton">เปลี่ยนสีพื้นหลัง</button>
+            <img src="images/profile.jpg" alt="รูปโปรไฟล์" class="profile-img"> <h2>ยินดีต้อนรับสู่บันทึกการฝึกงานของ [ชื่อของคุณ]</h2>
+            <p>ตำแหน่ง: [ตำแหน่งฝึกงานของคุณ] ที่ [ชื่อบริษัท]</p>
+            <p>ระยะเวลา: [วันเริ่ม] - [วันจบ]</p>
+            <a href="daily-log.html" class="btn">ดูบันทึกรายวัน</a>
+        </section>
+
+        <section id="summary">
+            <h3>สรุปภาพรวมการฝึกงาน</h3>
+            <div class="summary-cards">
+                <div class="card">
+                    <h4>โปรเจกต์ที่ทำ</h4>
+                    <p>พัฒนาระบบ... และช่วยทีม...</p>
+                </div>
+                <div class="card">
+                    <h4>ทักษะที่ได้เรียนรู้</h4>
+                    <p>HTML, CSS, Git, GitHub...</p>
+                </div>
+                <div class="card">
+                    <h4>ความประทับใจ</h4>
+                    <p>พี่ๆ ในทีมใจดีมาก และได้เรียนรู้ทำงานจริง...</p>
+                </div>
+            </div>
         </section>
     </main>
 
-    <script src="script.js"></script>
+    <footer>
+        <p>&copy; 2023 [ชื่อของคุณ]. All rights reserved.</p>
+    </footer>
+
 </body>
 </html>

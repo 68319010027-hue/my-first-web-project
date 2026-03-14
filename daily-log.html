@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>บันทึกการฝึกงานรายวัน</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <nav>
+        <div class="container">
+            <h1>Internship Journal</h1>
+            <ul>
+                <li><a href="index.html">หน้าหลัก</a></li>
+                <li><a href="daily-log.html" class="active">บันทึกรายวัน</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <main class="container">
+        <h2>บันทึกการฝึกงานรายวัน</h2>
+
+        <section id="log-form">
+            <h3>เพิ่มบันทึกใหม่</h3>
+            <form id="addLogForm">
+                <div class="form-group">
+                    <label for="logDate">วันที่:</label>
+                    <input type="date" id="logDate" required>
+                </div>
+                <div class="form-group">
+                    <label for="logActivity">กิจกรรมวันนี้:</label>
+                    <textarea id="logActivity" rows="5" placeholder="วันนี้ทำอะไรบ้าง..." required></textarea>
+                </div>
+                <div class="form-group">
+                    <label for="logImage">รูปภาพประกอบ (ถ้ามี):</label>
+                    <input type="file" id="logImage" accept="images/*">
+                </div>
+                <button type="submit" class="btn">บันทึก</button>
+            </form>
+        </section>
+
+        <section id="log-list">
+            <h3>รายการบันทึก</h3>
+            <div id="logsContainer">
+                </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2023 [ชื่อของคุณ]. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
