@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="th">
 <head>
-    <meta charset="UTF-8"><title>Daily Logs | InternPro</title>
+    <meta charset="UTF-8"><title>ดูบันทึก | InternPro</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <nav>
@@ -11,7 +10,7 @@
             <a href="index.html" class="logo">INTERN<span>PRO</span></a>
             <ul>
                 <li><a href="index.html">หน้าหลัก</a></li>
-                <li><a href="daily-log.html">ดูบันทึก</a></li>
+                <li><a href="daily-log.html" class="active">ดูบันทึก</a></li>
                 <li><a href="upload.html">อัปโหลดงาน</a></li>
                 <li><a href="attendance.html">ลงเวลาทำงาน</a></li>
                 <li><a href="profile.html">ข้อมูลส่วนตัว</a></li>
@@ -20,17 +19,15 @@
     </nav>
     <main class="container log-page-grid">
         <aside class="log-sidebar">
-            <div class="glass-card" style="padding:20px;">
-                <h3 style="margin-bottom:15px;">📅 เลือกสัปดาห์</h3>
+            <div class="glass-card">
+                <h3>📅 สัปดาห์การฝึกงาน</h3>
                 <div id="weekNavigation"></div>
+                <hr style="margin:20px 0; opacity:0.1;">
+                <button onclick="exportData()" class="btn btn-outline" style="width:100%; font-size:0.8rem;">💾 อัปเดตไฟล์ data.json</button>
             </div>
         </aside>
         <div class="log-content">
-            <div id="logDisplayArea">
-                <div class="glass-card" style="text-align:center; padding:60px;">
-                    <h3>กรุณาเลือกสัปดาห์เพื่อดูรายการ</h3>
-                </div>
-            </div>
+            <div id="logDisplayArea"></div>
         </div>
     </main>
     <script src="script.js"></script>
