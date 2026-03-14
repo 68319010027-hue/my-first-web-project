@@ -15,7 +15,7 @@
                 <li><a href="index.html">หน้าหลัก</a></li>
                 <li><a href="daily-log.html">ดูบันทึก</a></li>
                 <li><a href="upload.html">อัปโหลดงาน</a></li>
-                <li><a href="attendance.html">ลงเวลาทำงาน</a></li>
+                <li><a href="attendance.html" class="active">ลงเวลาทำงาน</a></li>
                 <li><a href="profile.html">ข้อมูลส่วนตัว</a></li>
             </ul>
         </div>
@@ -23,8 +23,8 @@
     <main class="container">
         <div style="max-width:800px; margin:40px auto;">
             <section class="glass-card fade-in" style="text-align:center; margin-bottom:20px;">
-                <h2 id="liveClock">00:00:00</h2>
-                <p id="currentDateDisplay">...</p>
+                <h2 id="liveClock" style="font-size: 3rem; color: var(--primary);">00:00:00</h2>
+                <p id="currentDateDisplay" style="font-size: 1.2rem; color: var(--text-light);">...</p>
                 <div style="margin-top:25px; display:flex; gap:15px; justify-content:center;">
                     <button id="btnIn" onclick="saveTime('IN')" class="btn btn-primary">Check In</button>
                     <button id="btnOut" onclick="saveTime('OUT')" class="btn btn-outline">Check Out</button>

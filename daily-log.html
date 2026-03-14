@@ -13,25 +13,25 @@
             <a href="index.html" class="logo">INTERN<span>PRO</span></a>
             <ul>
                 <li><a href="index.html">หน้าหลัก</a></li>
-                <li><a href="daily-log.html">ดูบันทึก</a></li>
+                <li><a href="daily-log.html" class="active">ดูบันทึก</a></li>
                 <li><a href="upload.html">อัปโหลดงาน</a></li>
                 <li><a href="attendance.html">ลงเวลาทำงาน</a></li>
                 <li><a href="profile.html">ข้อมูลส่วนตัว</a></li>
             </ul>
         </div>
     </nav>
-    <main class="container log-page-grid">
+    <main class="container log-page-grid" style="margin-top: 30px; display: grid; grid-template-columns: 280px 1fr; gap: 25px;">
         <aside class="log-sidebar">
-            <div class="glass-card">
-                <h3>📅 สัปดาห์การฝึกงาน</h3>
-                <div id="weekNavigation"></div>
+            <div class="glass-card" style="position: sticky; top: 100px;">
+                <h3 style="margin-bottom:15px;">📅 เลือกสัปดาห์</h3>
+                <div id="weekNavigation" class="week-nav-container"></div>
                 <hr style="margin:20px 0; opacity:0.1;">
-                <button onclick="exportData()" class="btn btn-outline" style="width:100%; font-size:0.8rem;">💾 ดาวน์โหลดข้อมูล (JSON)</button>
+                <button onclick="exportData()" class="btn btn-outline" style="width:100%; font-size:0.8rem;">💾 โหลดไฟล์ data.json</button>
             </div>
         </aside>
-        <div class="log-content">
+        <section class="log-content">
             <div id="logDisplayArea"></div>
-        </div>
+        </section>
     </main>
     <script src="script.js"></script>
 </body>
