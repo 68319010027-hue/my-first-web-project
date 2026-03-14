@@ -31,7 +31,6 @@ async function saveTime(type) {
     const ref = db.collection("attendance");
 
     if (type === "IN") {
-        // เช็กว่าวันนี้มีรายการที่ยังไม่ Check out อยู่หรือไม่
         const snap = await ref
             .where("date", "==", today)
             .where("out", "==", null)
@@ -50,7 +49,6 @@ async function saveTime(type) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     } else if (type === "OUT") {
-        // หา record วันนี้ที่ยังไม่ out
         const snap = await ref
             .where("date", "==", today)
             .where("out", "==", null)
@@ -87,7 +85,6 @@ function listenAttendance() {
                 rows.push({ id: doc.id, ...doc.data() });
             });
 
-            // เรียงตามวันที่ แล้วตามเวลาเข้า
             rows.sort((a, b) => {
                 const da = new Date(a.date);
                 const dbb = new Date(b.date);
@@ -322,3 +319,15 @@ function listenLogs() {
 
 listenAttendance();
 listenLogs();
+
+// ================= NAVBAR TOGGLE (MOBILE) =================
+document.addEventListener("DOMContentLoaded", () => {
+    const navToggle = document.getElementById("navToggle");
+    const navMenu = document.getElementById("navMenu");
+
+    if (navToggle && navMenu) {
+        navToggle.addEventListener("click", () => {
+            navMenu.classList.toggle("open");
+        });
+    }
+});
