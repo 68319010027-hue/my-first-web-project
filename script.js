@@ -138,7 +138,7 @@ function compressImageForFirestore(file) {
                     result = canvas.toDataURL("image/jpeg", quality);
                 }
                 if (result.length > maxSize) {
-                    result = canvas.toDataURL("image/jpeg", 0.2");
+                    result = canvas.toDataURL("image/jpeg", 0.2);
                 }
                 resolve(result);
             };
