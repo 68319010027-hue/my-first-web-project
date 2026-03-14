@@ -1,32 +1,6 @@
-// ================= INITIAL & STORAGE =================
-async function initData() {
-    // ถ้ายังไม่มีข้อมูลในเครื่อง ให้ไปดึงจาก data.json มาเป็นค่าเริ่มต้น
-    if (!localStorage.getItem("internData")) {
-        try {
-            const response = await fetch('data.json');
-            if (response.ok) {
-                const initialData = await response.json();
-                saveData(initialData);
-                // สั่ง Render ใหม่หลังจากโหลดเสร็จ
-                renderAttendance();
-                renderWeeks();
-            }
-        } catch (error) {
-            console.error("ไม่สามารถโหลด data.json ได้:", error);
-        }
-    }
-}
-
-function getData() {
-    return JSON.parse(localStorage.getItem("internData")) || { attendance: [], logs: [] };
-}
-
-function saveData(data) {
-    localStorage.setItem("internData", JSON.stringify(data));
-}
-
-// เรียกใช้งานทันทีที่โหลดไฟล์นี้
-initData();
+// ================= GLOBAL STATE (FIREBASE) =================
+let allLogs = [];
+let currentWeek = null;
 
 // ================= CLOCK =================
 function updateClock() {
@@ -42,47 +16,76 @@ function updateClock() {
     if (clock) clock.innerText = time;
     if (dateDisplay) dateDisplay.innerText = date;
 }
+updateClock();
 setInterval(updateClock, 1000);
 
-// ================= ATTENDANCE =================
-function saveTime(type) {
-    let data = getData();
+// ================= ATTENDANCE (FIRESTORE) =================
+async function saveTime(type) {
+    if (!window.db) {
+        alert("ยังไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+        return;
+    }
     const today = new Date().toISOString().split("T")[0];
     const time = new Date().toLocaleTimeString();
-
-    const todayRecords = data.attendance.filter(a => a.date === today);
-    const last = todayRecords[todayRecords.length - 1];
+    const ref = db.collection("attendance");
 
     if (type === "IN") {
-        if (last && !last.out) { alert("ยังไม่ได้ Check out"); return; }
-        data.attendance.push({ id: Date.now(), date: today, in: time, out: null });
+        const snap = await ref
+            .where("date", "==", today)
+            .where("out", "==", null)
+            .orderBy("createdAt", "desc")
+            .limit(1)
+            .get();
+        if (!snap.empty) {
+            alert("ยังไม่ได้ Check out");
+            return;
+        }
+        await ref.add({
+            date: today,
+            in: time,
+            out: null,
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
     } else if (type === "OUT") {
-        if (!last || last.out) { alert("ต้อง Check in ก่อน"); return; }
-        last.out = time;
+        const snap = await ref
+            .where("date", "==", today)
+            .where("out", "==", null)
+            .orderBy("createdAt", "desc")
+            .limit(1)
+            .get();
+        if (snap.empty) {
+            alert("ต้อง Check in ก่อน");
+            return;
+        }
+        const doc = snap.docs[0];
+        await doc.ref.update({ out: time });
     }
-
-    saveData(data);
-    renderAttendance();
 }
 
-function renderAttendance() {
+function listenAttendance() {
     const table = document.getElementById("attendanceBody");
-    if (!table) return;
-    const data = getData();
-    table.innerHTML = "";
-    data.attendance.forEach(item => {
-        const status = item.out ? "เสร็จงาน" : "กำลังทำงาน";
-        table.innerHTML += `
-        <tr>
-            <td>${item.date}</td>
-            <td>${item.in}</td>
-            <td>${item.out || "-"}</td>
-            <td><span class="badge">${status}</span></td>
-        </tr>`;
-    });
+    if (!table || !window.db) return;
+
+    db.collection("attendance")
+        .orderBy("date")
+        .orderBy("in")
+        .onSnapshot(snapshot => {
+            table.innerHTML = "";
+            snapshot.forEach(doc => {
+                const item = doc.data();
+                const status = item.out ? "เสร็จงาน" : "กำลังทำงาน";
+                table.innerHTML += `
+                <tr>
+                    <td>${item.date}</td>
+                    <td>${item.in || "-"}</td>
+                    <td>${item.out || "-"}</td>
+                    <td><span class="badge">${status}</span></td>
+                </tr>`;
+            });
+        });
 }
 
-// ================= DAILY LOG =================
+// ================= DAILY LOG (FIRESTORE) =================
 const form = document.getElementById("addLogForm");
 if (form) {
     form.addEventListener("submit", function(e) {
@@ -92,16 +95,18 @@ if (form) {
         const file = document.getElementById("logImage").files[0];
         const reader = new FileReader();
 
-        reader.onload = function() {
-            let data = getData();
-            data.logs.push({
-                id: Date.now(),
+        reader.onload = async function() {
+            if (!window.db) {
+                alert("ยังไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+                return;
+            }
+            await db.collection("logs").add({
                 date: date,
                 activity: activity,
-                image: file ? reader.result : null
+                image: file ? reader.result : null,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
-            saveData(data);
-            alert("บันทึกสำเร็จ! ข้อมูลถูกเก็บไว้ในเบราว์เซอร์แล้ว");
+            alert("บันทึกสำเร็จ! ข้อมูลถูกเก็บไว้บนระบบกลางแล้ว");
             form.reset();
         };
 
@@ -110,12 +115,10 @@ if (form) {
     });
 }
 
-function deleteLog(id) {
+async function deleteLog(id) {
     if (!confirm("ต้องการลบรายการนี้หรือไม่?")) return;
-    let data = getData();
-    data.logs = data.logs.filter(log => log.id !== id);
-    saveData(data);
-    renderWeeks();
+    if (!window.db) return;
+    await db.collection("logs").doc(id).delete();
 }
 
 // ================= LOGIC: WEEK & RENDER =================
@@ -129,21 +132,18 @@ function getWeekNumber(startDate, currentDate) {
 }
 
 function groupLogsByWeek() {
-    const data = getData();
     const weeks = {};
-    if (data.logs.length === 0) return weeks;
-    const sortedLogs = [...data.logs].sort((a, b) => new Date(a.date) - new Date(b.date));
+    if (allLogs.length === 0) return weeks;
+    const sortedLogs = [...allLogs].sort((a, b) => new Date(a.date) - new Date(b.date));
     const startDate = sortedLogs[0].date;
 
-    data.logs.forEach(log => {
+    allLogs.forEach(log => {
         const week = getWeekNumber(startDate, log.date);
         if (!weeks[week]) weeks[week] = [];
         weeks[week].push(log);
     });
     return weeks;
 }
-
-let currentWeek = null;
 function renderWeeks() {
     const nav = document.getElementById("weekNavigation");
     if (!nav) return;
@@ -184,7 +184,7 @@ function renderLogs(week) {
         grouped[date].forEach(log => {
             html += `
             <div class="task-entry" style="position:relative; margin-bottom:15px; border-bottom:1px solid #eee; padding-bottom:10px;">
-                <button class="btn-delete" onclick="deleteLog(${log.id})">✖</button>
+                <button class="btn-delete" onclick="deleteLog('${log.id}')">✖</button>
                 <p>${log.activity}</p>
                 ${log.image ? `<img src="${log.image}" style="max-width:100%; border-radius:10px; margin-top:10px;">` : ""}
             </div>`;
@@ -194,9 +194,20 @@ function renderLogs(week) {
     });
 }
 
-// ================= DATA IMPORT/EXPORT =================
-function exportData() {
-    const data = getData();
+// ================= DATA IMPORT/EXPORT (FIRESTORE) =================
+async function exportData() {
+    if (!window.db) {
+        alert("ยังไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+        return;
+    }
+    const attSnap = await db.collection("attendance").orderBy("date").get();
+    const logSnap = await db.collection("logs").orderBy("date").get();
+
+    const data = {
+        attendance: attSnap.docs.map(d => ({ id: d.id, ...d.data() })),
+        logs: logSnap.docs.map(d => ({ id: d.id, ...d.data() }))
+    };
+
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
@@ -204,21 +215,71 @@ function exportData() {
     a.click();
 }
 
-function importData(event) {
+async function importData(event) {
     const file = event.target.files[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = function(e) {
+    reader.onload = async function(e) {
         try {
             const importedData = JSON.parse(e.target.result);
-            saveData(importedData);
+            if (!window.db) {
+                alert("ยังไม่สามารถเชื่อมต่อฐานข้อมูลได้");
+                return;
+            }
+            const batch = db.batch();
+
+            if (Array.isArray(importedData.attendance)) {
+                importedData.attendance.forEach(item => {
+                    const ref = item.id
+                        ? db.collection("attendance").doc(item.id)
+                        : db.collection("attendance").doc();
+                    batch.set(ref, {
+                        date: item.date,
+                        in: item.in || item.checkIn || null,
+                        out: item.out || item.checkOut || null,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+            }
+
+            if (Array.isArray(importedData.logs)) {
+                importedData.logs.forEach(item => {
+                    const ref = item.id
+                        ? db.collection("logs").doc(item.id)
+                        : db.collection("logs").doc();
+                    batch.set(ref, {
+                        date: item.date,
+                        activity: item.activity,
+                        image: item.image || null,
+                        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                });
+            }
+
+            await batch.commit();
             alert("อัปเดตข้อมูลจากไฟล์สำเร็จ!");
-            location.reload();
         } catch (err) { alert("ไฟล์ JSON ไม่ถูกต้อง"); }
     };
     reader.readAsText(file);
 }
 
-// Initial renders
-renderAttendance();
-renderWeeks();
+// ================= REALTIME LISTENERS (INIT) =================
+function listenLogs() {
+    const area = document.getElementById("logDisplayArea");
+    const nav = document.getElementById("weekNavigation");
+    if ((!area && !nav) || !window.db) return;
+
+    db.collection("logs")
+        .orderBy("date")
+        .orderBy("createdAt")
+        .onSnapshot(snapshot => {
+            allLogs = [];
+            snapshot.forEach(doc => {
+                allLogs.push({ id: doc.id, ...doc.data() });
+            });
+            renderWeeks();
+        });
+}
+
+listenAttendance();
+listenLogs();
