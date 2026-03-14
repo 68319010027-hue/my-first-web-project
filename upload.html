@@ -5,14 +5,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>อัปโหลดงาน | InternPro</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Sarabun:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
-    <nav>
+    <nav aria-label="เมนูหลัก">
         <div class="container nav-flex">
             <a href="index.html" class="logo">INTERN<span>PRO</span></a>
-            <ul>
+            <button type="button" class="nav-toggle" id="navToggle" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="navMenu">
+                <span></span><span></span><span></span>
+            </button>
+            <ul id="navMenu">
                 <li><a href="index.html">หน้าหลัก</a></li>
+                <li><a href="dashboard.html">แดชบอร์ด</a></li>
                 <li><a href="daily-log.html">ดูบันทึก</a></li>
                 <li><a href="upload.html" class="active">อัปโหลดงาน</a></li>
                 <li><a href="attendance.html">ลงเวลาทำงาน</a></li>
@@ -20,6 +24,7 @@
             </ul>
         </div>
     </nav>
+    <div class="nav-overlay" id="navOverlay" aria-hidden="true"></div>
 
     <main class="container">
         <div class="glass-card fade-in" style="max-width:600px; margin:40px auto;">
@@ -38,6 +43,14 @@
             </form>
         </div>
     </main>
+
+    <footer class="site-footer">
+        <div class="container footer-inner">
+            <p class="footer-org">สำนักงานสาธารณสุขจังหวัดเลย</p>
+            <p class="footer-meta">ระบบจัดการและบันทึกการฝึกงาน — InternPro</p>
+            <p class="footer-year">© 2025–2026</p>
+        </div>
+    </footer>
 
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>

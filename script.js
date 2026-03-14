@@ -25,50 +25,61 @@ async function saveTime(type) {
         alert("ยังไม่สามารถเชื่อมต่อฐานข้อมูลได้");
         return;
     }
+    try {
+        var today = new Date().toISOString().split("T")[0];
+        var time = new Date().toLocaleTimeString();
+        var ref = db.collection("attendance");
 
-    const today = new Date().toISOString().split("T")[0];
-    const time = new Date().toLocaleTimeString();
-    const ref = db.collection("attendance");
+        if (type === "IN") {
+            var snap = await ref
+                .where("date", "==", today)
+                .where("out", "==", null)
+                .limit(1)
+                .get();
 
-    if (type === "IN") {
-        const snap = await ref
-            .where("date", "==", today)
-            .where("out", "==", null)
-            .limit(1)
-            .get();
+            if (!snap.empty) {
+                alert("ยังไม่ได้ Check out");
+                return;
+            }
 
-        if (!snap.empty) {
-            alert("ยังไม่ได้ Check out");
-            return;
+            await ref.add({
+                date: today,
+                in: time,
+                out: null,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
+            if (window.showToast) showToast("Check In สำเร็จ");
+        } else if (type === "OUT") {
+            snap = await ref
+                .where("date", "==", today)
+                .where("out", "==", null)
+                .limit(1)
+                .get();
+
+            if (snap.empty) {
+                alert("ต้อง Check in ก่อน");
+                return;
+            }
+
+            var doc = snap.docs[0];
+            await doc.ref.update({ out: time });
+            if (window.showToast) showToast("Check Out สำเร็จ");
         }
-
-        await ref.add({
-            date: today,
-            in: time,
-            out: null,
-            createdAt: firebase.firestore.FieldValue.serverTimestamp()
-        });
-    } else if (type === "OUT") {
-        const snap = await ref
-            .where("date", "==", today)
-            .where("out", "==", null)
-            .limit(1)
-            .get();
-
-        if (snap.empty) {
-            alert("ต้อง Check in ก่อน");
-            return;
-        }
-
-        const doc = snap.docs[0];
-        await doc.ref.update({ out: time });
+    } catch (err) {
+        console.error(err);
+        alert("เกิดข้อผิดพลาด: " + (err.message || "ไม่สามารถบันทึกได้"));
     }
 }
 
 async function deleteAttendance(id) {
     if (!confirm("ต้องการลบรายการลงเวลานี้หรือไม่?")) return;
     if (!window.db) return;
-    await db.collection("attendance").doc(id).delete();
+    try {
+        await db.collection("attendance").doc(id).delete();
+    } catch (err) {
+        console.error(err);
+        alert("เกิดข้อผิดพลาด: " + (err.message || "ลบไม่สำเร็จ"));
+    }
 }
 
 function listenAttendance() {
@@ -138,7 +149,7 @@ function compressImageForFirestore(file) {
                     result = canvas.toDataURL("image/jpeg", quality);
                 }
                 if (result.length > maxSize) {
-                    result = canvas.toDataURL("image/jpeg", 0.2");
+                    result = canvas.toDataURL("image/jpeg", 0.2);
                 }
                 resolve(result);
             };
@@ -173,15 +184,20 @@ if (form) {
                 }
             }
 
-            await db.collection("logs").add({
-                date: date,
-                activity: activity,
-                image: imageData,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            });
-
-            alert("บันทึกสำเร็จ! ข้อมูลถูกเก็บไว้บนระบบกลางแล้ว");
-            form.reset();
+            try {
+                await db.collection("logs").add({
+                    date: date,
+                    activity: activity,
+                    image: imageData,
+                    createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                if (window.showToast) showToast("บันทึกสำเร็จ! ข้อมูลถูกเก็บไว้บนระบบกลางแล้ว");
+                else alert("บันทึกสำเร็จ! ข้อมูลถูกเก็บไว้บนระบบกลางแล้ว");
+                form.reset();
+            } catch (err) {
+                console.error(err);
+                alert("เกิดข้อผิดพลาด: " + (err.message || "บันทึกไม่สำเร็จ"));
+            }
         })();
     });
 }
@@ -189,7 +205,12 @@ if (form) {
 async function deleteLog(id) {
     if (!confirm("ต้องการลบรายการนี้หรือไม่?")) return;
     if (!window.db) return;
-    await db.collection("logs").doc(id).delete();
+    try {
+        await db.collection("logs").doc(id).delete();
+    } catch (err) {
+        console.error(err);
+        alert("เกิดข้อผิดพลาด: " + (err.message || "ลบไม่สำเร็จ"));
+    }
 }
 
 // ================= LOGIC: WEEK & RENDER =================
@@ -360,11 +381,60 @@ function listenLogs() {
         });
 }
 
+// ================= DASHBOARD =================
+function getThisWeekStart() {
+    var d = new Date();
+    var day = d.getDay();
+    var diff = d.getDate() - (day === 0 ? 7 : day) + 1;
+    var monday = new Date(d);
+    monday.setDate(diff);
+    return monday.toISOString().split("T")[0];
+}
+
+function listenDashboard() {
+    var totalAtt = document.getElementById("dashboardAttendanceTotal");
+    var totalLogs = document.getElementById("dashboardLogsTotal");
+    var weekAtt = document.getElementById("dashboardAttendanceThisWeek");
+    var weekLogs = document.getElementById("dashboardLogsThisWeek");
+    if (!totalAtt && !totalLogs && !weekAtt && !weekLogs) return;
+    if (!window.db) return;
+
+    var weekStart = getThisWeekStart();
+
+    function setEl(id, val) {
+        var el = document.getElementById(id);
+        if (el) el.textContent = val;
+    }
+
+    db.collection("attendance").onSnapshot(function (snap) {
+        var total = snap.size;
+        var thisWeek = 0;
+        snap.forEach(function (doc) {
+            var date = doc.data().date;
+            if (date && date >= weekStart) thisWeek++;
+        });
+        setEl("dashboardAttendanceTotal", total);
+        setEl("dashboardAttendanceThisWeek", thisWeek);
+    });
+
+    db.collection("logs").onSnapshot(function (snap) {
+        var total = snap.size;
+        var thisWeek = 0;
+        snap.forEach(function (doc) {
+            var date = doc.data().date;
+            if (date && date >= weekStart) thisWeek++;
+        });
+        setEl("dashboardLogsTotal", total);
+        setEl("dashboardLogsThisWeek", thisWeek);
+    });
+}
+
 // เริ่ม listeners เมื่อ Firebase พร้อม (รองรับกรณีโหลดไม่พร้อมกัน)
 function startFirestoreListeners() {
     if (window.db) {
         listenAttendance();
         listenLogs();
+        listenDashboard();
         return true;
     }
     return false;
@@ -376,3 +446,79 @@ if (!startFirestoreListeners()) {
     }, 100);
     setTimeout(function () { clearInterval(retry); }, 3000);
 }
+
+// ================= NAV (Mobile menu – ใช้ทุกหน้า) =================
+(function () {
+    function initNav() {
+        var toggle = document.getElementById("navToggle");
+        var menu = document.getElementById("navMenu");
+        var overlay = document.getElementById("navOverlay");
+        if (!toggle || !menu) return;
+
+        function open() {
+            menu.classList.add("is-open");
+            if (overlay) overlay.classList.add("is-open");
+            toggle.setAttribute("aria-expanded", "true");
+            toggle.setAttribute("aria-label", "ปิดเมนู");
+        }
+        function close() {
+            menu.classList.remove("is-open");
+            if (overlay) overlay.classList.remove("is-open");
+            toggle.setAttribute("aria-expanded", "false");
+            toggle.setAttribute("aria-label", "เปิดเมนู");
+        }
+
+        toggle.addEventListener("click", function () {
+            if (menu.classList.contains("is-open")) close(); else open();
+        });
+        if (overlay) overlay.addEventListener("click", close);
+        menu.querySelectorAll("a").forEach(function (a) {
+            a.addEventListener("click", close);
+        });
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initNav);
+    } else {
+        initNav();
+    }
+})();
+
+// ================= ลูกเล่น: ปุ่มกลับขึ้นบน + แจ้งเตือนสั้นๆ =================
+(function () {
+    function initBackToTop() {
+        var btn = document.createElement("button");
+        btn.className = "back-to-top";
+        btn.setAttribute("aria-label", "กลับขึ้นด้านบน");
+        btn.innerHTML = "<svg fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\"><path stroke-linecap=\"round\" stroke-linejoin=\"round\" stroke-width=\"2\" d=\"M5 10l7-7m0 0l7 7m-7-7v18\"/></svg>";
+        btn.onclick = function () {
+            window.scrollTo({ top: 0, behavior: "smooth" });
+        };
+        document.body.appendChild(btn);
+
+        function onScroll() {
+            if (window.scrollY > 400) btn.classList.add("visible");
+            else btn.classList.remove("visible");
+        }
+        window.addEventListener("scroll", onScroll, { passive: true });
+        onScroll();
+    }
+
+    window.showToast = function (message) {
+        var el = document.createElement("div");
+        el.setAttribute("role", "status");
+        el.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#0f172a;color:#fff;padding:12px 20px;border-radius:12px;font-size:0.95rem;z-index:9999;box-shadow:0 10px 40px rgba(0,0,0,0.2);animation:fadeIn 0.3s ease;";
+        el.textContent = message;
+        document.body.appendChild(el);
+        setTimeout(function () {
+            el.style.opacity = "0";
+            el.style.transition = "opacity 0.3s";
+            setTimeout(function () { el.remove(); }, 300);
+        }, 2500);
+    };
+
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initBackToTop);
+    } else {
+        initBackToTop();
+    }
+})();
