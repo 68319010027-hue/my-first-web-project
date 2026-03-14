@@ -31,14 +31,21 @@ nav ul li a:hover, nav ul li a.active { background: var(--primary); color: white
 .log-nav-item:hover { transform: translateX(5px); border-color: var(--primary); color: var(--primary); }
 .log-nav-item.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-/* Buttons */
+/* Profile Grid */
+.profile-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 30px; margin-top: 20px; }
+.profile-card { text-align: center; transition: 0.3s; }
+.profile-img { width: 140px; height: 140px; border-radius: 50%; object-fit: cover; margin-bottom: 15px; border: 4px solid var(--primary); }
+.info-list { text-align: left; list-style: none; margin-top: 15px; }
+.info-list li { margin-bottom: 8px; font-size: 0.9rem; color: var(--text-light); border-bottom: 1px dashed #eee; padding-bottom: 5px; }
+.info-list b { color: var(--text); }
+
+/* Buttons & Others */
 .btn { border: none; padding: 12px 24px; border-radius: 12px; font-weight: 500; cursor: pointer; transition: 0.3s; text-decoration: none; display: inline-block; font-size: 1rem; }
 .btn-primary { background: var(--primary); color: white; }
 .btn-outline { border: 2px solid #e2e8f0; background: white; color: var(--text); }
 .btn-danger-sm { background: #fee2e2; color: var(--danger); padding: 5px 10px; border-radius: 8px; font-size: 0.8rem; border: none; cursor: pointer; transition: 0.2s; }
 .btn-danger-sm:hover { background: var(--danger); color: white; }
 
-/* Attendance & Logs */
 #liveClock { font-size: 4rem; font-weight: 700; color: var(--primary); margin: 10px 0; letter-spacing: -2px; }
 .attendance-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
 .attendance-table th { background: #f8fafc; padding: 15px; color: var(--text-light); border-bottom: 2px solid #e2e8f0; }
@@ -51,4 +58,7 @@ nav ul li a:hover, nav ul li a.active { background: var(--primary); color: white
 .fade-in { animation: fadeIn 0.5s ease-in-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-@media (max-width: 768px) { .log-page-grid { grid-template-columns: 1fr; } .log-sidebar { position: static; } }
+@media (max-width: 768px) { 
+    .log-page-grid, .profile-grid { grid-template-columns: 1fr; } 
+    .log-sidebar { position: static; } 
+}

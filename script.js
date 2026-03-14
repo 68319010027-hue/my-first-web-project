@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    // 1. ระบบ Active Menu และการเชื่อมโยง
     const path = window.location.pathname.split("/").pop() || "index.html";
     document.querySelectorAll('nav ul li a').forEach(link => {
         if (link.getAttribute('href') === path) link.classList.add('active');
@@ -8,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const weekNav = document.getElementById('weekNavigation');
     const logDisplayArea = document.getElementById('logDisplayArea');
 
-    // 1. ระบบอัปโหลด
+    // 2. ระบบบันทึกข้อมูล
     if (addLogForm) {
         addLogForm.addEventListener('submit', (e) => {
             e.preventDefault();
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // 2. ระบบจัดการสัปดาห์ และการลบ
+    // 3. ระบบจัดการสัปดาห์ในหน้า ดูบันทึก
     if (weekNav) { renderWeekMenu(); }
 
     function renderWeekMenu() {
@@ -43,6 +44,7 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        // เรียงวันที่จากเก่าไปใหม่เพื่อหาจุดเริ่มต้น
         logs.sort((a, b) => new Date(a.date) - new Date(b.date));
         const firstDate = new Date(logs[0].date);
         const firstMonday = new Date(firstDate);
@@ -112,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    // 3. ระบบลงเวลา (สะสมรอบ)
+    // 4. ระบบลงเวลา
     const liveClock = document.getElementById('liveClock');
     if (liveClock) {
         setInterval(() => {
@@ -130,23 +132,14 @@ document.addEventListener('DOMContentLoaded', () => {
         let history = JSON.parse(localStorage.getItem('attendanceHistory')) || [];
 
         if (type === 'IN') {
-            // เช็คว่ามีรอบที่ยังไม่ Out ค้างอยู่ไหม
             const openSession = history.find(r => r.out === '-');
-            if(openSession) {
-                alert("คุณยังมีรอบงานที่ยังไม่ได้ Check Out!");
-                return;
-            }
+            if(openSession) { alert("คุณยังมีรอบงานที่ยังไม่ได้ Check Out!"); return; }
             history.unshift({ id: Date.now(), date: dateStr, in: timeStr, out: '-' });
         } else {
             const lastSession = history.find(r => r.out === '-');
-            if (lastSession) {
-                lastSession.out = timeStr;
-            } else {
-                alert("ไม่พบข้อมูลการ Check In ในขณะนี้!");
-                return;
-            }
+            if (lastSession) { lastSession.out = timeStr; } 
+            else { alert("ไม่พบข้อมูลการ Check In ในขณะนี้!"); return; }
         }
-        
         localStorage.setItem('attendanceHistory', JSON.stringify(history));
         renderAttendance();
     };
