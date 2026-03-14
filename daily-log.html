@@ -11,7 +11,14 @@
     <nav>
         <div class="container nav-flex">
             <a href="index.html" class="logo">INTERN<span>PRO</span></a>
-            <ul>
+
+            <button class="nav-toggle" aria-label="Toggle navigation" id="navToggle">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+
+            <ul id="navMenu">
                 <li><a href="index.html">หน้าหลัก</a></li>
                 <li><a href="daily-log.html" class="active">ดูบันทึก</a></li>
                 <li><a href="upload.html">อัปโหลดงาน</a></li>
@@ -20,6 +27,7 @@
             </ul>
         </div>
     </nav>
+
     <main class="container log-page-grid">
         <aside class="log-sidebar">
             <div class="glass-card">
@@ -35,6 +43,7 @@
             <div id="logDisplayArea"></div>
         </section>
     </main>
+
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/11.0.1/firebase-firestore-compat.js"></script>
     <script src="firebase-config.js"></script>
