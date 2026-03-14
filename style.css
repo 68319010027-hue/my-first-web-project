@@ -1,45 +1,61 @@
-/* ===== Responsive Navbar (mobile) ===== */
-.nav-toggle {
-  display: none;
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
+/* --- Navigation --- */
+nav { 
+    background: var(--glass); 
+    backdrop-filter: blur(10px); 
+    position: sticky; 
+    top: 0; 
+    z-index: 1000; 
+    padding: 15px 0; 
+    border-bottom: 1px solid rgba(0,0,0,0.05); 
 }
 
-.nav-toggle span {
-  display: block;
-  width: 22px;
-  height: 2px;
-  margin: 4px 0;
-  background: #1e293b;
-  border-radius: 999px;
+.nav-flex { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
 }
 
+.logo { 
+    font-size: 1.5rem; 
+    font-weight: 600; 
+    color: var(--text); 
+    text-decoration: none; 
+}
+
+.logo span { 
+    color: var(--primary); 
+}
+
+nav ul { 
+    display: flex; 
+    list-style: none; 
+    gap: 5px; 
+}
+
+nav ul li a { 
+    text-decoration: none; 
+    color: var(--text); 
+    padding: 8px 16px; 
+    border-radius: 10px; 
+    transition: 0.3s; 
+    font-size: 0.95rem; 
+}
+
+nav ul li a:hover,
+nav ul li a.active { 
+    background: var(--primary); 
+    color: white; 
+}
+
+/* --- Responsive: ไม่ซ่อนเมนูบนมือถือ --- */
 @media (max-width: 768px) {
-  nav .nav-flex {
-    justify-content: space-between;
-  }
+    .log-page-grid, .profile-grid { 
+        grid-template-columns: 1fr; 
+    }
 
-  nav ul {
-    display: none;
-    position: absolute;
-    top: 60px;
-    right: 20px;
-    left: 20px;
-    background: white;
-    border-radius: 16px;
-    box-shadow: 0 10px 25px -5px rgba(0,0,0,0.15);
-    flex-direction: column;
-    padding: 10px 0;
-    z-index: 1000;
-  }
-
-  nav ul.open {
-    display: flex;
-  }
-
-  .nav-toggle {
-    display: block;
-  }
+    nav ul {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+    }
 }
