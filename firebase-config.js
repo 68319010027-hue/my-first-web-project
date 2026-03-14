@@ -1,6 +1,5 @@
-// กรอกค่า config ของโปรเจกต์ Firebase ของคุณที่นี่
-// สามารถหาได้จากหน้า Project settings > Your apps ใน Firebase console
-// ข้อมูลชุดนี้ออกแบบมาให้เป็น public ได้ (ใช้กับเว็บ front-end)
+// ค่า config จาก Firebase Console > Project settings > Your apps
+// ใช้กับโปรเจกต์ project-93b95
 
 const firebaseConfig = {
     apiKey: "AIzaSyC_Gccnqvc2BC3kqtdrtRn63c_0ZhVwcus",
@@ -12,8 +11,11 @@ const firebaseConfig = {
     measurementId: "G-53Y7NCCFVK"
 };
 
-// ห้ามลบบรรทัดนี้ จำเป็นสำหรับใช้งาน Firestore ทั่วทั้งเว็บ
-firebase.initializeApp(firebaseConfig);
-const db = firebase.firestore();
-// ให้ตัวแปร db ใช้ได้ผ่าน window.db ด้วย
-window.db = db;
+// ต้องโหลด firebase-app-compat.js และ firebase-firestore-compat.js ก่อนไฟล์นี้
+if (typeof firebase !== "undefined") {
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    window.db = db;
+} else {
+    console.error("Firebase SDK ยังไม่โหลด โปรดตรวจสอบลำดับ script ใน HTML");
+}

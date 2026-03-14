@@ -61,9 +61,7 @@ async function saveTime(type) {
         }
 
         const doc = snap.docs[0];
-        await doc.ref.update({
-            out: time
-        });
+        await doc.ref.update({ out: time });
     }
 }
 
@@ -102,9 +100,7 @@ function listenAttendance() {
                     <td>${item.out || "-"}</td>
                     <td><span class="badge">${status}</span></td>
                     <td>
-                        <button class="btn-danger-sm" onclick="deleteAttendance('${item.id}')">
-                            ลบ
-                        </button>
+                        <button class="btn-danger-sm" onclick="deleteAttendance('${item.id}')">ลบ</button>
                     </td>
                 </tr>`;
             });
@@ -300,7 +296,7 @@ async function importData(event) {
     reader.readAsText(file);
 }
 
-// ================= REALTIME LISTENERS (INIT) =================
+// ================= REALTIME LISTENERS =================
 function listenLogs() {
     const area = document.getElementById("logDisplayArea");
     const nav = document.getElementById("weekNavigation");
@@ -317,17 +313,19 @@ function listenLogs() {
         });
 }
 
-listenAttendance();
-listenLogs();
-
-// ================= NAVBAR TOGGLE (MOBILE) =================
-document.addEventListener("DOMContentLoaded", () => {
-    const navToggle = document.getElementById("navToggle");
-    const navMenu = document.getElementById("navMenu");
-
-    if (navToggle && navMenu) {
-        navToggle.addEventListener("click", () => {
-            navMenu.classList.toggle("open");
-        });
+// เริ่ม listeners เมื่อ Firebase พร้อม (รองรับกรณีโหลดไม่พร้อมกัน)
+function startFirestoreListeners() {
+    if (window.db) {
+        listenAttendance();
+        listenLogs();
+        return true;
     }
-});
+    return false;
+}
+
+if (!startFirestoreListeners()) {
+    var retry = setInterval(function () {
+        if (startFirestoreListeners()) clearInterval(retry);
+    }, 100);
+    setTimeout(function () { clearInterval(retry); }, 3000);
+}
