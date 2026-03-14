@@ -31,7 +31,7 @@ async function saveTime(type) {
     const ref = db.collection("attendance");
 
     if (type === "IN") {
-        // หา record วันนี้ที่ยังไม่มี out อยู่แล้วหรือไม่
+        // เช็กว่าวันนี้มีรายการที่ยังไม่ Check out อยู่หรือไม่
         const snap = await ref
             .where("date", "==", today)
             .where("out", "==", null)
@@ -50,6 +50,7 @@ async function saveTime(type) {
             createdAt: firebase.firestore.FieldValue.serverTimestamp()
         });
     } else if (type === "OUT") {
+        // หา record วันนี้ที่ยังไม่ out
         const snap = await ref
             .where("date", "==", today)
             .where("out", "==", null)
