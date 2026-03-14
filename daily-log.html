@@ -20,13 +20,15 @@
             </ul>
         </div>
     </nav>
-    <main class="container log-page-grid" style="margin-top: 30px; display: grid; grid-template-columns: 280px 1fr; gap: 25px;">
+    <main class="container log-page-grid">
         <aside class="log-sidebar">
-            <div class="glass-card" style="position: sticky; top: 100px;">
-                <h3 style="margin-bottom:15px;">📅 เลือกสัปดาห์</h3>
+            <div class="glass-card">
+                <h3>📅 เลือกสัปดาห์</h3>
                 <div id="weekNavigation" class="week-nav-container"></div>
                 <hr style="margin:20px 0; opacity:0.1;">
-                <button onclick="exportData()" class="btn btn-outline" style="width:100%; font-size:0.8rem;">💾 โหลดไฟล์ data.json</button>
+                <button onclick="exportData()" class="btn btn-outline" style="width:100%; font-size:0.8rem; margin-bottom:10px;">💾 โหลดไฟล์ JSON</button>
+                <label for="importFile" class="btn btn-primary" style="width:100%; font-size:0.8rem; cursor:pointer; display:block; text-align:center;">📂 นำเข้าไฟล์ JSON</label>
+                <input type="file" id="importFile" style="display:none;" accept=".json" onchange="importData(event)">
             </div>
         </aside>
         <section class="log-content">
