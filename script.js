@@ -8,7 +8,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 localStorage.setItem('internshipLogs', JSON.stringify(data.internshipLogs || []));
                 localStorage.setItem('attendanceHistory', JSON.stringify(data.attendanceHistory || []));
                 localStorage.setItem('dataInitialized', 'true');
-            } catch (e) { console.error("Load error:", e); }
+            } catch (e) { 
+                console.error("Load error:", e);
+                // ตั้งค่าพื้นฐานถ้าโหลดไฟล์ไม่สำเร็จ
+                localStorage.setItem('internshipLogs', JSON.stringify([]));
+                localStorage.setItem('attendanceHistory', JSON.stringify([]));
+            }
         }
     }
     await initData();
@@ -50,12 +55,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     function renderLogs() {
         const logs = JSON.parse(localStorage.getItem('internshipLogs')) || [];
+        const area = document.getElementById('logDisplayArea');
         if (logs.length === 0) {
-            document.getElementById('logDisplayArea').innerHTML = "<p>ยังไม่มีข้อมูลบันทึก</p>";
+            area.innerHTML = "<div class='glass-card'><p>ยังไม่มีข้อมูลบันทึก</p></div>";
             return;
         }
 
-        // หาความต่างของสัปดาห์ (เริ่มสัปดาห์ที่บันทึกครั้งแรกเป็นสัปดาห์ที่ 1)
         const sortedLogs = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
         const firstDate = new Date(sortedLogs[0].date);
 
@@ -64,7 +69,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             const currentDate = new Date(log.date);
             const diffTime = Math.abs(currentDate - firstDate);
             const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            const weekNum = Math.floor(diffDays / 7) + 1; // เริ่มที่ 1
+            const weekNum = Math.floor(diffDays / 7) + 1;
             
             if (!weeksMap[weekNum]) weeksMap[weekNum] = [];
             weeksMap[weekNum].push(log);
@@ -75,10 +80,16 @@ document.addEventListener('DOMContentLoaded', async () => {
         ).join('');
 
         window.displayWeek = (w) => {
-            const area = document.getElementById('logDisplayArea');
+            // ลบคลาส active เดิมออก
+            document.querySelectorAll('.log-nav-item').forEach(el => el.classList.remove('active'));
+            // เพิ่มคลาส active ให้สัปดาห์ที่เลือก
+            const items = document.querySelectorAll('.log-nav-item');
+            const targetIndex = Object.keys(weeksMap).indexOf(w.toString());
+            if(items[targetIndex]) items[targetIndex].classList.add('active');
+
             area.innerHTML = weeksMap[w].map(item => `
                 <div class="glass-card fade-in" style="margin-bottom:20px; position:relative;">
-                    <button onclick="deleteLog(${item.id})" style="position:absolute; right:15px; top:15px; background:red; color:white; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">ลบ</button>
+                    <button onclick="deleteLog(${item.id})" style="position:absolute; right:15px; top:15px; background:#fee2e2; color:#ef4444; border:none; padding:5px 10px; border-radius:5px; cursor:pointer;">ลบ</button>
                     <h4 style="color:var(--primary)">${new Date(item.date).toLocaleDateString('th-TH', {dateStyle:'full'})}</h4>
                     <p>${item.activity}</p>
                     ${item.image ? `<img src="${item.image}" style="width:100%; border-radius:10px; margin-top:15px;">` : ''}
@@ -130,7 +141,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         if (!body) return;
         const history = JSON.parse(localStorage.getItem('attendanceHistory')) || [];
         
-        // จัดการปุ่ม Check-in / Check-out
         const btnIn = document.getElementById('btnIn');
         const btnOut = document.getElementById('btnOut');
         const isWorking = history.length > 0 && history[0].out === '-';
@@ -160,7 +170,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const blob = new Blob([JSON.stringify(allData, null, 2)], {type : 'application/json'});
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
-        a.href = url; a.download = 'data.json';
+        a.href = url; a.download = 'updated_data.json';
         a.click();
     };
 });
