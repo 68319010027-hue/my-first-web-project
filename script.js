@@ -102,6 +102,54 @@ function listenAttendance() {
 }
 
 // ================= DAILY LOG (FIRESTORE) =================
+// ย่อ/บีบอัดรูปให้ไม่เกินขีดจำกัด Firestore (~1 MB ต่อฟิลด์)
+function compressImageForFirestore(file) {
+    return new Promise(function (resolve) {
+        if (!file || !file.type.startsWith("image/")) {
+            resolve(null);
+            return;
+        }
+        var maxSize = 900000;
+        var reader = new FileReader();
+        reader.onload = function (e) {
+            var dataUrl = e.target.result;
+            if (dataUrl.length <= maxSize) {
+                resolve(dataUrl);
+                return;
+            }
+            var img = new Image();
+            img.onload = function () {
+                var canvas = document.createElement("canvas");
+                var ctx = canvas.getContext("2d");
+                var w = img.width;
+                var h = img.height;
+                var maxW = 800;
+                if (w > maxW) {
+                    h = (h * maxW) / w;
+                    w = maxW;
+                }
+                canvas.width = w;
+                canvas.height = h;
+                ctx.drawImage(img, 0, 0, w, h);
+                var quality = 0.7;
+                var result = canvas.toDataURL("image/jpeg", quality);
+                while (result.length > maxSize && quality > 0.2) {
+                    quality -= 0.1;
+                    result = canvas.toDataURL("image/jpeg", quality);
+                }
+                if (result.length > maxSize) {
+                    result = canvas.toDataURL("image/jpeg", 0.2");
+                }
+                resolve(result);
+            };
+            img.onerror = function () { resolve(null); };
+            img.src = dataUrl;
+        };
+        reader.onerror = function () { resolve(null); };
+        reader.readAsDataURL(file);
+    });
+}
+
 const form = document.getElementById("addLogForm");
 if (form) {
     form.addEventListener("submit", function (e) {
@@ -109,27 +157,32 @@ if (form) {
         const date = document.getElementById("logDate").value;
         const activity = document.getElementById("logActivity").value;
         const file = document.getElementById("logImage").files[0];
-        const reader = new FileReader();
 
-        reader.onload = async function () {
+        (async function () {
             if (!window.db) {
                 alert("ยังไม่สามารถเชื่อมต่อฐานข้อมูลได้");
                 return;
             }
 
+            var imageData = null;
+            if (file) {
+                imageData = await compressImageForFirestore(file);
+                if (file.size > 0 && !imageData) {
+                    alert("ไม่สามารถอ่านไฟล์รูปได้ กรุณาเลือกรูปใหม่");
+                    return;
+                }
+            }
+
             await db.collection("logs").add({
                 date: date,
                 activity: activity,
-                image: file ? reader.result : null,
+                image: imageData,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
             alert("บันทึกสำเร็จ! ข้อมูลถูกเก็บไว้บนระบบกลางแล้ว");
             form.reset();
-        };
-
-        if (file) reader.readAsDataURL(file);
-        else reader.onload();
+        })();
     });
 }
 
