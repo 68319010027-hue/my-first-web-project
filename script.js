@@ -28,8 +28,7 @@ function getData(){
 
     return JSON.parse(localStorage.getItem("internData")) || {
         attendance:[],
-        logs:[],
-        startDate:null
+        logs:[]
     }
 
 }
@@ -52,8 +51,6 @@ function saveTime(type){
     const todayRecords = data.attendance.filter(a=>a.date===today)
     const last = todayRecords[todayRecords.length-1]
 
-
-    // CHECK IN
     if(type==="IN"){
 
         if(last && !last.out){
@@ -70,8 +67,6 @@ function saveTime(type){
 
     }
 
-
-    // CHECK OUT
     if(type==="OUT"){
 
         if(!last || last.out){
@@ -144,8 +139,6 @@ form.addEventListener("submit",function(e){
 
         let data = getData()
 
-        if(!data.startDate) data.startDate = date
-
         data.logs.push({
             id:Date.now(),
             date:date,
@@ -158,6 +151,8 @@ form.addEventListener("submit",function(e){
         alert("บันทึกสำเร็จ")
 
         form.reset()
+
+        renderWeeks()
 
     }
 
@@ -211,11 +206,20 @@ function groupLogsByWeek(){
 
     const data = getData()
 
-    const weeks={}
+    const weeks = {}
+
+    if(data.logs.length===0) return weeks
+
+    // หา date ที่เก่าที่สุด
+    const sortedLogs = [...data.logs].sort(
+        (a,b)=> new Date(a.date)-new Date(b.date)
+    )
+
+    const startDate = sortedLogs[0].date
 
     data.logs.forEach(log=>{
 
-        const week = getWeekNumber(data.startDate,log.date)
+        const week = getWeekNumber(startDate,log.date)
 
         if(!weeks[week]) weeks[week]=[]
 
@@ -241,7 +245,9 @@ function renderWeeks(){
 
     nav.innerHTML=""
 
-    Object.keys(weeks).forEach(w=>{
+    const weekKeys = Object.keys(weeks)
+
+    weekKeys.forEach(w=>{
 
         const div=document.createElement("div")
 
@@ -260,9 +266,45 @@ function renderWeeks(){
 
     })
 
+    if(weekKeys.length>0){
+
+        const lastWeek = weekKeys[weekKeys.length-1]
+
+        currentWeek = lastWeek
+
+        renderLogs(lastWeek)
+
+    }
+
 }
 
 renderWeeks()
+
+
+// ================= THAI DATE =================
+function formatThaiDate(dateStr){
+
+    const d = new Date(dateStr)
+
+    const days = [
+        "วันอาทิตย์","วันจันทร์","วันอังคาร",
+        "วันพุธ","วันพฤหัสบดี","วันศุกร์","วันเสาร์"
+    ]
+
+    const months = [
+        "มกราคม","กุมภาพันธ์","มีนาคม","เมษายน",
+        "พฤษภาคม","มิถุนายน","กรกฎาคม","สิงหาคม",
+        "กันยายน","ตุลาคม","พฤศจิกายน","ธันวาคม"
+    ]
+
+    const dayName = days[d.getDay()]
+    const day = d.getDate()
+    const month = months[d.getMonth()]
+    const year = d.getFullYear()+543
+
+    return `📅 ${dayName} ที่ ${day} ${month} ${year}`
+
+}
 
 
 // ================= RENDER LOGS =================
@@ -278,6 +320,8 @@ function renderLogs(week){
 
     area.innerHTML=""
 
+    if(!logs) return
+
     let grouped={}
 
     logs.forEach(l=>{
@@ -288,12 +332,23 @@ function renderLogs(week){
 
     })
 
+    const sortedDates = Object.keys(grouped).sort(
+        (a,b)=> new Date(a)-new Date(b)
+    )
 
-    Object.keys(grouped).forEach(date=>{
+    sortedDates.forEach(date=>{
 
         let html=`
         <div class="glass-card">
-        <h3>${date}</h3>
+        <h3 style="
+        font-size:20px;
+        color:#4f46e5;
+        margin-bottom:10px;
+        border-bottom:2px solid #e5e7eb;
+        padding-bottom:5px;
+        ">
+        ${formatThaiDate(date)}
+        </h3>
         `
 
         grouped[date].forEach(log=>{
@@ -304,11 +359,18 @@ function renderLogs(week){
             <button class="btn-delete"
             onclick="deleteLog(${log.id})">✖</button>
 
-            <p>${log.activity}</p>
+            <p style="font-size:15px;line-height:1.6">
+            ${log.activity}
+            </p>
 
             ${
                 log.image
-                ? `<img src="${log.image}" style="max-width:300px;margin-top:10px;border-radius:10px;">`
+                ? `<img src="${log.image}" style="
+                max-width:300px;
+                margin-top:10px;
+                border-radius:10px;
+                box-shadow:0 4px 10px rgba(0,0,0,0.1);
+                ">`
                 : ""
             }
 
