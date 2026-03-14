@@ -69,6 +69,12 @@ async function saveTime(type) {
     }
 }
 
+async function deleteAttendance(id) {
+    if (!confirm("ต้องการลบรายการลงเวลานี้หรือไม่?")) return;
+    if (!window.db) return;
+    await db.collection("attendance").doc(id).delete();
+}
+
 function listenAttendance() {
     const table = document.getElementById("attendanceBody");
     if (!table || !window.db) return;
@@ -76,9 +82,21 @@ function listenAttendance() {
     db.collection("attendance")
         .orderBy("date")
         .onSnapshot(snapshot => {
-            table.innerHTML = "";
+            const rows = [];
             snapshot.forEach(doc => {
-                const item = doc.data();
+                rows.push({ id: doc.id, ...doc.data() });
+            });
+
+            // เรียงตามวันที่ แล้วตามเวลาเข้า
+            rows.sort((a, b) => {
+                const da = new Date(a.date);
+                const dbb = new Date(b.date);
+                if (da.getTime() !== dbb.getTime()) return da - dbb;
+                return (a.in || "").localeCompare(b.in || "");
+            });
+
+            table.innerHTML = "";
+            rows.forEach(item => {
                 const status = item.out ? "เสร็จงาน" : "กำลังทำงาน";
                 table.innerHTML += `
                 <tr>
@@ -86,6 +104,11 @@ function listenAttendance() {
                     <td>${item.in || "-"}</td>
                     <td>${item.out || "-"}</td>
                     <td><span class="badge">${status}</span></td>
+                    <td>
+                        <button class="btn-danger-sm" onclick="deleteAttendance('${item.id}')">
+                            ลบ
+                        </button>
+                    </td>
                 </tr>`;
             });
         });
